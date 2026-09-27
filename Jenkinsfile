@@ -2,10 +2,20 @@ pipeline {
     agent any
 
     stages {
-        stage('Approve') {
+        stage('Build') {
             steps {
-                input message: 'Deploy to production?'
+                echo 'Building...'
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline succeeded'
+        }
+
+        failure {
+            echo 'Pipeline failed'
         }
     }
 }
