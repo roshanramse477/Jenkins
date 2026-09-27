@@ -1,21 +1,55 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Build') {
-            steps {
-                echo 'Building...'
-            }
-        }
+    parameters {
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['staging', 'production'],
+            description: 'Target'
+        )
     }
 
-    post {
-        success {
-            echo 'Pipeline succeeded'
+    stages {
+
+        stage('Build') {
+            steps {
+                sh 'echo Building'
+            }
         }
 
-        failure {
-            echo 'Pipeline failed'
+        stage('Tests') {
+            parallel {
+
+                stage('Unit') {
+                    steps {
+                        sh 'echo Unit tests'
+                    }
+                }
+
+                stage('Integration') {
+                    steps {
+                        sh 'echo Integration tests'
+                    }
+                }
+            }
+        }
+
+        stage('Approve') {
+            when {
+                expression {
+                    params.ENVIRONMENT == 'production'
+                }
+            }
+
+            steps {
+                input message: 'Deploy to production?'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh "echo Deploying to ${params.ENVIRONMENT}"
+            }
         }
     }
 }
